@@ -3,6 +3,7 @@ Real-ESRGAN DEMO on Axera
 
 - 目前支持  Python 语言 
 - 预编译模型下载[models](https://github.com/wzf19947/PPOCR_v5/releases/download/v1.0.0/model.tar.gz)。如需自行转换请参考[模型转换](/model_convert/README.md)
+- 支持x2、x4分辨率放大
 
 ## 支持平台
 
@@ -40,7 +41,7 @@ cd python
 python3 run_onnx.py --input ./pics --outscale 2 --model_path ./realesrgan-x2.onnx
 ```
 输出结果
-![output](asserts/res_onnx.jpg)
+![output](results/1.png)
 
 ##### 基于AXEngine运行  
 在开发板上运行命令
@@ -50,7 +51,7 @@ cd python
 python3 run_axmodel.py --input ./pics --outscale 2 --model_path ./realesrgan-x2.axmodel
 ```  
 输出结果
-![output](asserts/res_ax.jpg)
+![output](results/2.png)
 
 
 运行参数说明:  

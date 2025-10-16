@@ -40,6 +40,19 @@ pip3 install -r requirements.txt
 cd python
 python3 run_onnx.py --input ./pics --outscale 2 --model_path ./realesrgan-x2.onnx
 ```
+```
+Testing 0 00003
+Testing 1 00017_gray
+Testing 2 0014
+Testing 3 0030
+Testing 4 ADE_val_00000114
+Testing 5 OST_009
+Testing 6 children-alpha
+Testing 7 tree_alpha_16bit
+	Input is a 16-bit image
+Testing 8 video
+Testing 9 wolf_gray
+```
 输出结果
 ![output](results/1.png)
 
@@ -49,7 +62,50 @@ python3 run_onnx.py --input ./pics --outscale 2 --model_path ./realesrgan-x2.onn
 ```
 cd python  
 python3 run_axmodel.py --input ./pics --outscale 2 --model_path ./realesrgan-x2.axmodel
-```  
+```
+```
+[INFO] Available providers:  ['AxEngineExecutionProvider']
+Testing 0 00003
+[INFO] Using provider: AxEngineExecutionProvider
+[INFO] Chip type: ChipType.MC50
+[INFO] VNPU type: VNPUType.DISABLED
+[INFO] Engine version: 2.12.0s
+[INFO] Model type: 2 (triple core)
+[INFO] Compiler version: 4.2-dirty 5e72cf06-dirty
+Testing 1 00017_gray
+[INFO] Using provider: AxEngineExecutionProvider
+[INFO] Model type: 2 (triple core)
+[INFO] Compiler version: 4.2-dirty 5e72cf06-dirty
+Testing 2 0014
+[INFO] Using provider: AxEngineExecutionProvider
+[INFO] Model type: 2 (triple core)
+[INFO] Compiler version: 4.2-dirty 5e72cf06-dirty
+Testing 3 0030
+[INFO] Using provider: AxEngineExecutionProvider
+[INFO] Model type: 2 (triple core)
+[INFO] Compiler version: 4.2-dirty 5e72cf06-dirty
+Testing 4 ADE_val_00000114
+[INFO] Using provider: AxEngineExecutionProvider
+[INFO] Model type: 2 (triple core)
+[INFO] Compiler version: 4.2-dirty 5e72cf06-dirty
+Testing 5 OST_009
+[INFO] Using provider: AxEngineExecutionProvider
+[INFO] Model type: 2 (triple core)
+[INFO] Compiler version: 4.2-dirty 5e72cf06-dirty
+Testing 6 children-alpha
+[INFO] Using provider: AxEngineExecutionProvider
+[INFO] Model type: 2 (triple core)
+[INFO] Compiler version: 4.2-dirty 5e72cf06-dirty
+Testing 7 tree_alpha_16bit
+        Input is a 16-bit image
+[INFO] Using provider: AxEngineExecutionProvider
+[INFO] Model type: 2 (triple core)
+[INFO] Compiler version: 4.2-dirty 5e72cf06-dirty
+Testing 8 wolf_gray
+[INFO] Using provider: AxEngineExecutionProvider
+[INFO] Model type: 2 (triple core)
+[INFO] Compiler version: 4.2-dirty 5e72cf06-dirty
+```
 输出结果
 ![output](results/2.png)
 

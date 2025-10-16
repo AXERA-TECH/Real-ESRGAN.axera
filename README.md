@@ -3,7 +3,7 @@ Real-ESRGAN DEMO on Axera
 
 - 目前支持  Python 语言 
 - 预编译模型下载[models](https://github.com/wzf19947/PPOCR_v5/releases/download/v1.0.0/model.tar.gz)。如需自行转换请参考[模型转换](/model_convert/README.md)
-- 支持x2、x4分辨率放大
+- 支持任意分辨率的x2、x4放大
 
 ## 支持平台
 

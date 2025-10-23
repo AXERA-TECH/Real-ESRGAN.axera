@@ -6,7 +6,7 @@ import math
 import numpy as np
 import axengine as axe
 
-def pre_process(img, tile_size=128):
+def pre_process(img, tile_size=108, tile_pad=10):
     """Pre-process, such as pre-pad and mod pad, so that the images can be divisible
     """
     # mod pad for divisible borders
@@ -17,12 +17,17 @@ def pre_process(img, tile_size=128):
         pad_h = (tile_size - h % tile_size)
     if w % tile_size != 0:
         pad_w = (tile_size - w % tile_size)
-    img = np.pad(img, ((0, pad_h), (0, pad_w), (0, 0)), mode='reflect')
+    img = np.pad(img, ((0, pad_h), (0, pad_w), (0, 0)), 'constant')   #mode='reflect')
+
+    # boundary pad
+    img = np.pad(img, ((tile_pad, tile_pad), (tile_pad, tile_pad), (0, 0)), 'constant')
+
+    # to CHW-Batch format
     img = np.expand_dims(np.transpose(img, (2, 0, 1)), axis=0)
 
     return img
 
-def tile_process(img, origin_shape, model, scale=2, tile_size=64):
+def tile_process(img, origin_shape, model, scale=2, tile_size=108, tile_pad=10, imgname=None):
     """It will first crop input images to tiles, and then process each tile.
     Finally, all the processed tiles are merged into one images.
     """
@@ -40,11 +45,13 @@ def tile_process(img, origin_shape, model, scale=2, tile_size=64):
     output_height = int(round(height * scale))
     output_width = int(round(width * scale))
     output_shape = (batch, channel, output_height, output_width)
+    origin_h, origin_w = origin_shape[0:2]
 
     # start with black image
     output = np.zeros(output_shape)
-    tiles_x = math.ceil(width / tile_size)
-    tiles_y = math.ceil(height / tile_size)
+    tiles_x = math.floor(width / tile_size)
+    tiles_y = math.floor(height / tile_size)
+    print(f'Tile {tiles_x} x {tiles_y} for image {imgname}')
 
     # loop over all tiles
     for y in range(tiles_y):
@@ -59,8 +66,8 @@ def tile_process(img, origin_shape, model, scale=2, tile_size=64):
             input_end_y = min(ofs_y + tile_size, height)
 
             # input tile dimensions
-            tile_idx = y * tiles_x + x + 1
-            input_tile = img[:, :, input_start_y:input_end_y, input_start_x:input_end_x]
+            input_tile = img[:, :, input_start_y:(input_end_y+2*tile_pad),
+                             input_start_x:(input_end_x+2*tile_pad)]
 
             # upscale tile
             try:
@@ -74,10 +81,14 @@ def tile_process(img, origin_shape, model, scale=2, tile_size=64):
             output_end_x = int(round(input_end_x * scale))
             output_start_y = int(round(input_start_y * scale))
             output_end_y = int(round(input_end_y * scale))
-            output[:, :, output_start_y:output_end_y, output_start_x:output_end_x] = output_tile[0]
+
+            start_tile = int(round(tile_pad * scale))
+            end_tile = int(round(tile_size * scale)) + start_tile
+
+            output[:, :, output_start_y:output_end_y,
+                   output_start_x:output_end_x] = output_tile[0][:, :, start_tile:end_tile, start_tile:end_tile]
 
     # remove extra padding parts
-    origin_h, origin_w = origin_shape[0:2]
     output = output[:, :, :int(round(origin_h * scale)), :int(round(origin_w * scale))].squeeze(0)
     output = np.transpose(output[[2, 1, 0], :, :], (1, 2, 0)).astype(np.float32)
 
@@ -93,7 +104,8 @@ def main():
     parser.add_argument(
         '--model_path', type=str, default=None, help='Model path. you need to specify it [Options: ]')
     parser.add_argument('--suffix', type=str, default='out', help='Suffix of the restored image')
-    parser.add_argument('-t', '--tile', type=int, default=128, help='Tile size, 0 for no tile during testing')
+    parser.add_argument('-t', '--tile', type=int, default=108, help='Tile size, 0 for no tile during testing')
+    parser.add_argument('--tile_pad', type=int, default=10, help='Tile padding, (tile + tile_pad must == 128.)')
     parser.add_argument(
         '--ext',
         type=str,
@@ -101,6 +113,9 @@ def main():
         help='Image extension. Options: auto | jpg | png, auto means using the same extension as inputs')
 
     args = parser.parse_args()
+
+    # shape check
+    assert (args.tile + 2*args.tile_pad) == 128, 'the model input size: 128.'
 
     # input
     if os.path.isfile(args.input):
@@ -146,7 +161,7 @@ def main():
 
         # tile process
         try:
-            output_img = tile_process(img, origin_shape, args.model_path, args.outscale, args.tile)
+            output_img = tile_process(img, origin_shape, args.model_path, args.outscale, args.tile, args.tile_pad, imgname)
         except RuntimeError as error:
             print('Error', error)
             print('If you encounter out of memory, try to set --tile with a smaller number.')
@@ -167,7 +182,7 @@ def main():
         if max_range == 65535:  # 16-bit image
             output = np.clip((output_img * 65535.0), 0, 65535).astype(np.uint16)
         else:
-            output = np.clip((output_img * 255.0), 0, 255).round().astype(np.uint8)
+            output = np.clip((output_img * 255.0), 0, 255).astype(np.uint8)
 
         if args.ext == 'auto':
             extension = extension[1:]
